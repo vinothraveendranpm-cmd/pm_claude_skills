@@ -257,7 +257,7 @@ Produce the teardown as a **single React artifact** with:
 - Section headers with visual hierarchy
 - Tables rendered cleanly (not walls of text)
 - Color-coded elements: primary color for the product's brand identity, neutral grays for tables
-- SWOT rendered as a 2×2 grid
+- SWOT rendered as a 2x2 grid
 - Persona cards with avatar placeholder, profile details, needs, and frustrations
 - RICE/scoring tables with highest scorer highlighted
 - Mobile-readable layout
@@ -266,14 +266,85 @@ Use realistic data throughout. If data is unavailable, use well-reasoned estimat
 
 ---
 
+## Post-Artifact Export Flow
+
+After the React artifact is rendered, ALWAYS ask the user:
+
+> "Your teardown is ready! Would you like to export it as a **PDF** or **PowerPoint (PPTX)**? Or keep it as the interactive web view?"
+
+Wait for their response, then follow the appropriate path below.
+
+### If user chooses PDF:
+
+Use Python with weasyprint to generate a clean, print-ready PDF:
+
+1. Cover page with product name, tagline, date
+2. One page per major section — preserve tables, persona cards, SWOT grid
+3. Clean typography — readable font, consistent heading hierarchy
+4. Page numbers and section headers in footer
+
+```python
+pip install weasyprint --break-system-packages
+from weasyprint import HTML
+HTML(string=html_content).write_pdf("/mnt/user-data/outputs/teardown.pdf")
+```
+
+Build the HTML string from the same teardown content — same sections, same data. Style for print (A4, 2cm margins). Present using present_files.
+
+### If user chooses PowerPoint (PPTX):
+
+Map the 14 sections to slides using python-pptx:
+
+| Slide | Content |
+|-------|---------|
+| 1 | Cover — Product name, subtitle, date |
+| 2 | Market Overview — key stats |
+| 3 | Mission, Vision & Highlights |
+| 4 | Competitive Analysis table |
+| 5 | User Segmentation + SWOT 2x2 |
+| 6 | User Research — insights + pain points |
+| 7-9 | User Personas — one slide each |
+| 10 | User Journey Map |
+| 11 | Problem Space — priority matrix |
+| 12 | Solution Brainstorming table |
+| 13 | Solution Scoring + RICE Framework |
+| 14 | Wireframe Concepts |
+| 15 | Metrics table |
+| 16 | Pitfalls & Mitigation |
+| 17 | Go-To-Market Strategy |
+| 18 | Thank You slide |
+
+```python
+pip install python-pptx --break-system-packages
+from pptx import Presentation
+from pptx.util import Inches, Pt
+prs = Presentation()
+prs.slide_width = Inches(13.33)
+prs.slide_height = Inches(7.5)
+# add slides per section...
+prs.save("/mnt/user-data/outputs/teardown.pptx")
+```
+
+Design guidelines: use product brand color as accent, white/light gray background, max 6 bullets per slide, alternating row colors on tables, consistent header bar per slide. Present using present_files.
+
+### If user keeps web view:
+
+Confirm it is ready and offer to export later if they change their mind.
+
+---
+
 ## Quality Checklist
 
-Before outputting, verify:
+Before outputting the React artifact, verify:
 - [ ] All 14 sections are present
 - [ ] At least 3 personas with real-feeling names and details
 - [ ] Problem priority matrix has 7+ rows with scores
 - [ ] RICE framework applied to top solutions
 - [ ] Metrics include both primary and guardrail types
 - [ ] GTM covers all 3 phases
-- [ ] No generic placeholder text ("Lorem ipsum", "TBD", "Example metric")
-- [ ] Output is a single self-contained React artifact with navigation
+- [ ] No generic placeholder text anywhere
+- [ ] Single self-contained React artifact with sidebar navigation
+
+After export, verify:
+- [ ] PDF: all sections present, tables readable, page numbers visible
+- [ ] PPTX: 18 slides minimum, brand color applied, file downloads correctly
